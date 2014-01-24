@@ -17,11 +17,17 @@ abstract class BaseMongoRepository extends BaseRepository {
 	}
 
 	public function find($id) {
+		$stringId = (string) $id;
+		if (isset($this->models[$stringId])) {
+			return $this->models[$stringId];
+		}
+
 		if ($this->isStringMongoId($id)) {
 			$id = new \MongoId($id);
 		} else if (is_numeric($id)) {
 			$id = (int) $id;
 		}
+
 		return $this->findOneBy(array('_id' => $id));
 	}
 
@@ -79,6 +85,7 @@ abstract class BaseMongoRepository extends BaseRepository {
 			throw new \LogicException('Cannot delete a non-identifiable object.');
 		}
 		$this->getDatabaseCollection()->remove(array('_id' => $entity->getId()), array('justOne' => true));
+		unset($this->models[(string) $entity->getId()]);
 		$entity->setId(null);
 	}
 

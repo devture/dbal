@@ -5,7 +5,7 @@ use Devture\Component\DBAL\Model\BaseModel;
 
 abstract class BaseRepository implements RepositoryInterface {
 
-	private $models = array();
+	protected $models = array();
 
 	abstract protected function getModelClass();
 

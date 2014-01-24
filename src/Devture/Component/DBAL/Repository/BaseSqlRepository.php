@@ -16,6 +16,11 @@ abstract class BaseSqlRepository extends BaseRepository {
 	}
 
 	public function find($id) {
+		$stringId = (string) $id;
+		if (isset($this->models[$stringId])) {
+			return $this->models[$stringId];
+		}
+
 		return $this->findOneByQuery("SELECT * FROM " . $this->getTableName() . " WHERE _id = ? LIMIT 1", array($id));
 	}
 
@@ -77,6 +82,7 @@ abstract class BaseSqlRepository extends BaseRepository {
 			throw new \LogicException('Cannot delete a non-identifiable object.');
 		}
 		$this->db->delete($this->getTableName(), array('_id' => $entity->getId()));
+		unset($this->models[(string) $entity->getId()]);
 		$entity->setId(null);
 	}
 
