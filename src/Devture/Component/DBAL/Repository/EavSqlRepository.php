@@ -140,7 +140,9 @@ abstract class EavSqlRepository extends BaseSqlRepository {
 		$export = $this->flatten($this->exportModel($entity));
 		list($exportMain, $exportEav) = $this->splitMainAndEavExport($export);
 
-		$mainExport = array_merge($exportMain, ($hasIdBeforeInsert ? array('_id' => $entity->getId()) : array()));
+		$exportMain = array_merge($exportMain, ($hasIdBeforeInsert ? array('_id' => $entity->getId()) : array()));
+
+		$exportMain = $this->transformAllUsingMapping($exportMain, $this->getMainFieldsMapping());
 
 		try {
 			$this->db->beginTransaction();
@@ -180,11 +182,7 @@ abstract class EavSqlRepository extends BaseSqlRepository {
 		$export = $this->flatten($this->exportModel($entity));
 		list($exportMain, $exportEav) = $this->splitMainAndEavExport($export);
 
-		foreach ($this->getMainFieldsMapping() as $fieldKey => $valueType) {
-			if (isset($exportMain[$fieldKey])) {
-				$exportMain[$fieldKey] = $this->transformValue($exportMain[$fieldKey])[1];
-			}
-		}
+		$exportMain = $this->transformAllUsingMapping($exportMain, $this->getMainFieldsMapping());
 
 		try {
 			$this->db->beginTransaction();
@@ -377,6 +375,15 @@ abstract class EavSqlRepository extends BaseSqlRepository {
 			default:
 				throw new \InvalidArgumentException('Do not know how to reverse-transform value type: '. $type);
 		}
+	}
+
+	private function transformAllUsingMapping(array $data, $fieldsToTypesMapping) {
+		foreach ($fieldsToTypesMapping as $fieldKey => $valueType) {
+			if (isset($data[$fieldKey])) {
+				$data[$fieldKey] = $this->transformValue($data[$fieldKey])[1];
+			}
+		}
+		return $data;
 	}
 
 }
