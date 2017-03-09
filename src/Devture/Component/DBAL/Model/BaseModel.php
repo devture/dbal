@@ -14,6 +14,10 @@ abstract class BaseModel {
 	}
 
 	protected function setAttribute($key, $value) {
+		if(is_string($value)) {
+			$value = \voku\helper\UTF8::cleanup($value);
+		}
+		
 		$this->record[$key] = $value;
 	}
 
